@@ -127,21 +127,21 @@ function validate_form(obj)
 {
   var alert_message = "";
   var alert_prefix = "Ve formuláøi se vyskytly tyto problémy:\n";
-  if (obj.name=="registrace")
+  if (obj.id=="registrace")
   {
     alert_message = validate_required(obj.username, "Uživatelské jméno") + validate_required(obj.nickname, "Pøezdívka") + validate_required(obj.email, "E-mail") + validate_email(obj.email, "E-mail") + validate_required(obj.password, "Heslo");
   }; 
-  if (obj.name=="sipo")
+  if (obj.id=="sipo")
   {
     alert_message = validate_required(obj.prijmeni, "Pøíjmení") + validate_required(obj.jmeno, "Jméno") + validate_required(obj.narozeni_rok, "Datum narození") + validate_required(obj.ulice, "Ulice") + validate_required(obj.cislo_popisne, "Èíslo popisné") + validate_required(obj.obec, "Obec") + validate_required(obj.psc, "PSÈ pro adresu trvalého pobytu") + validate_numbers(obj.psc, 5, 5, "PSÈ pro adresu trvalého pobytu") + validate_numbers(obj.ku_psc, 5, 5, "PSÈ pro kontaktní údaje") + validate_required(obj.ku_email, "E-mail") + validate_email(obj.ku_email, "E-mail");
   };
-  if (obj.name=="smlouva")
+  if (obj.id=="smlouva")
   {
     alert_message = validate_required(obj.obchodni_nazev, "Pøesný obchodní název") + validate_required(obj.ic, "IÈ") + validate_numbers(obj.ic, 8, 8, "IÈ") + validate_required(obj.dic, "DIÈ") + validate_required(obj.ulice, "Ulice") + validate_required(obj.cislo_popisne, "Èíslo popisné") + validate_required(obj.obec, "Obec") + validate_required(obj.psc, "PSÈ") + validate_numbers(obj.psc, 5, 5, "PSÈ") + validate_required(obj.prijmeni, "Pøíjmení") + validate_required(obj.jmeno, "Jméno") + validate_required(obj.telefon, "Telefon") + validate_phone(obj.telefon, "Telefon") + validate_required(obj.email, "E-mail") + validate_email(obj.email, "E-mail");
   };
 
 // ukazka kontroly velmi komplexniho formulare pro zaslani zadosti o SIPO
-  if (obj.name=="sipo_kontakt")
+  if (obj.id=="sipo_kontakt")
   {
 
 // Oddíl 1 pro PO
