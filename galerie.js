@@ -1,5 +1,6 @@
 ﻿$(document).ready(function() {
-	
+
+	//gallery
 	if ($('dd.media-foto-slider ul li').length > 0) {
 		//inicializace
 		$('dd.media-foto-slider ul li').each(function(i) {
@@ -61,23 +62,30 @@
 		function updateSlider(n) {
 			var mslider = $('dd.media-foto-slider ul li');
 			var mslidersel = $('dd.media-foto-slider ul li a.selected').parent();
+			var firstVisible = null;
+			var lastVisible = null;
 
 			switch (n) {
 				case 'next': //sipka dalsi
-					//alert(mslidersel.index());
+					$('dd.media-foto-slider ul li').each(function(index) {
+						if (firstVisible == null) {
+							if (this.style.display != 'none') {
+								firstVisible = $(this);
+							}
+						}
+						else {
+							if (this.style.display != 'none') {
+								lastVisible = $(this);
+							}
+						}
+					});
 					//posun obrazku
-					if (mslidersel.index() > $('dd.media-foto-slider ul li:visible:last').index()) {
-						//alert("jsem tady");
-						$('dd.media-foto-slider ul li:visible').each(function(i) {
-							if (i == 0) {
-								$(this).hide();
-							}
-							if (i == $('dd.media-foto-slider ul li:visible').length) {
-								$(this).next().show();
-							}
-						});
+					//if (mslidersel.index() > $('dd.media-foto-slider ul li:visible:last').index()) {
+					if (mslidersel.index() > lastVisible.index()) {
 						//$('dd.media-foto-slider ul li:visible:first').hide();
 						//$('dd.media-foto-slider ul li:visible:last').next().show();
+						firstVisible.hide();
+						lastVisible.next().show();
 					}
 					//rozsviceni leve sipky
 					if (mslidersel.index() == 1) {
@@ -92,10 +100,22 @@
 					}
 					break;
 				case 'prev': //sipka predchozi
+					$('dd.media-foto-slider ul li').each(function(index) {
+						if (firstVisible == null) {
+							if (this.style.display != 'none') {
+								firstVisible = $(this);
+							}
+						}
+						else {
+							if (this.style.display != 'none') {
+								lastVisible = $(this);
+							}
+						}
+					});
 					//posun obrazku
-					if (mslidersel.index() < $('dd.media-foto-slider ul li:visible:first').index()) {
-						$('dd.media-foto-slider ul li:visible:last').hide();
-						$('dd.media-foto-slider ul li:visible:first').prev().show();
+					if (mslidersel.index() < firstVisible.index()) {
+						lastVisible.hide();
+						firstVisible.prev().show();
 					}
 					//zhasnuti leve sipky
 					if (mslidersel.index() == 0) {
@@ -103,13 +123,10 @@
 					}
 					//rozsviceni prave sipky
 					if (mslidersel.index() == (mslider.length - 2)) {
-						//prvni pokusy $('.control-next').replaceWith('<span class="control-next">&gt;<span></span></span>');
 						$('a.control-next span').removeClass('mdisabled');
 					}
 					break;
 				default: //kliknuti na obrazek
-					//alert(mslidersel.index());
-					//alert(mslider.length);
 					//zhasnuti leve sipky
 					if (mslidersel.index() == 0 && mslider.length > 1) {
 						$('a.control-previous span').addClass('mdisabled');
@@ -130,5 +147,4 @@
 
 	}
 
-	}
-);
+});
