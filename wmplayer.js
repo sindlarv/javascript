@@ -1,4 +1,4 @@
-﻿// wmplayer.js 1.7 --sindlarv
+﻿// wmplayer.js 1.7.1 --sindlarv
 
 $(document).ready(function() {
   var elem = $('#menuList');
@@ -62,31 +62,6 @@ $(document).ready(function() {
 
   // nacteni polozek online prenosu
   if (live > 0) {
-
-/* test: vice polozek
-    var liveCounter = 0;
-    liveItem = new Array();
-    
-    $('.live-item').each( function() {
-      liveItem[liveCounter] = new Array;
-      liveItem[liveCounter]['href'] = $(this).find('.live-url').text();
-      liveItem[liveCounter]['title'] = $(this).find('.live-title').text();
-      liveItem[liveCounter]['desc'] = $(this).find('.live-desc').text();
-      liveCounter++;
-    });
-    // spusteni online prenosu
-    var firstItem = 0;
-    if (liveItem[firstItem]) {
-      //console.log($('#playerObject param[name=URL]').attr('value'));
-      playerSetup();
-      playerObjInit();
-
-      wmplayer.URL = liveItem[firstItem]['href'];
-
-      setDescription(liveItem[firstItem]['title'],liveItem[firstItem]['desc']);
-      playerPlay();
-    }
-*/
     var liveItemTitle = $('#live-title').text();
     var liveItemDesc = $('#live-desc').text();
     var liveItemUrl = $('#live-url').text();
@@ -160,20 +135,9 @@ $(document).ready(function() {
   });
 
   pVolMap = $('#tvVolumeMapID > area');
-  //pVolImgSrc = $('#tvSetVolume').attr('src');
   pVolMap.click(function() {
     playerSetVolume($(this).index());
-    //pVolImgSrc = $(this).attr('src');
   });
-/*
-  // interaktivni indikator zmeny hlasitosti
-  pVolMap.mouseover(function() {
-    //console.log('pVolMap in, index: ' + $(this).index());
-    $('#tvSetVolume').attr('src', 'img/ico_tv-volume' + $(this).index() + '.png');
-  }).mouseout(function() {
-    $('#tvSetVolume').attr('src', pVolImgSrc);
-  });
-*/
 });
 
 
@@ -318,15 +282,6 @@ function playerUpdateProgress() {
 function playerSetup() {
   var pDefImg = $('#playerScreen > img');
 
-/* s novym designem neni potreba
-  pCtrl.each(function() {
-    $(this).find('a').css('cursor', 'pointer');
-  });
-  //pauza v rezimu live nefunguje
-  if (m != 0) {
-    $('#tvControlPause').css('cursor', 'default');
-  }
-*/
   $('#tvVolumeVol').css('cursor', 'pointer');
   $('#playerControl').show();
 
@@ -375,18 +330,6 @@ function getDuration() {
   if (wmpMedia == null || wmpMedia.duration == 0) {
     setTimeout("getDuration()", 150);
   }
-
-/* test
-  var counter = 0;
-  while (counter < 5 || wmpMedia.duration == 0) {
-    setTimeout("getDuration()", 150);
-    counter++;
-  }
-
-  while (wmplayer.playState <> 3) {
-    console.log(wmplayer.playState);
-  }
-*/
 
 }
 
