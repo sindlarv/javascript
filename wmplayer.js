@@ -1,4 +1,4 @@
-﻿// wmplayer.js 1.4 --sindlarv
+﻿// wmplayer.js 1.5 --sindlarv
 
 $(document).ready(function() {
   var elem = $('#menuList');
@@ -123,8 +123,22 @@ $(document).ready(function() {
     }
   });
 
-  $('#tvVolumeMapID > area').click(function() {
+  pVolMap = $('#tvVolumeMapID > area');
+  pVolImg = $('#tvSetVolume').attr('src');
+  pVolMap.click(function() {
     playerSetVolume($(this).index());
+    pVolImg = $(this).attr('src');
+  });
+
+  pVolMap.mouseover(function() {
+    //playerSetVolume('#tvVolumeMapID > area'.index());  tvSetVolume
+    //console.log("stary: " + $('#tvSetVolume').attr('src') + ", novy: img/ico_tv-volume" + $(this).index() + ".png");
+    //console.log("novy: img/ico_tv-volume" + $(this).index() + ".png");
+    //console.log('pVolMap in, index: ' + $(this).index());
+    $('#tvSetVolume').attr('src', 'img/ico_tv-volume' + $(this).index() + '.png');
+  }).mouseout(function() {
+    //console.log('pVolMap out');
+    $('#tvSetVolume').attr('src', pVolImg);
   });
 
 });
