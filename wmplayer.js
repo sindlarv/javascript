@@ -1,4 +1,4 @@
-﻿// wmplayer.js 1.6.1 --sindlarv
+﻿// wmplayer.js 1.7 --sindlarv
 
 $(document).ready(function() {
   var elem = $('#menuList');
@@ -7,6 +7,7 @@ $(document).ready(function() {
   var itemNumber = $('#menuList li').length;
   var scrollHeight = $.scrollTo.max(elem[0], 'y');
   var playerDefImg = $('#playerScreen > img');
+  var live = $('#live').length;
 
   $(window).scroll(function() {
     $('#ad').css('margin-top', $(window).scrollTop());
@@ -59,6 +60,51 @@ $(document).ready(function() {
     });
   }
 
+  // nacteni polozek online prenosu
+  if (live > 0) {
+
+/* test: vice polozek
+    var liveCounter = 0;
+    liveItem = new Array();
+    
+    $('.live-item').each( function() {
+      liveItem[liveCounter] = new Array;
+      liveItem[liveCounter]['href'] = $(this).find('.live-url').text();
+      liveItem[liveCounter]['title'] = $(this).find('.live-title').text();
+      liveItem[liveCounter]['desc'] = $(this).find('.live-desc').text();
+      liveCounter++;
+    });
+    // spusteni online prenosu
+    var firstItem = 0;
+    if (liveItem[firstItem]) {
+      //console.log($('#playerObject param[name=URL]').attr('value'));
+      playerSetup();
+      playerObjInit();
+
+      wmplayer.URL = liveItem[firstItem]['href'];
+
+      setDescription(liveItem[firstItem]['title'],liveItem[firstItem]['desc']);
+      playerPlay();
+    }
+*/
+    var liveItemTitle = $('#live-title').text();
+    var liveItemDesc = $('#live-desc').text();
+    var liveItemUrl = $('#live-url').text();
+
+    liveItemUrl = liveItemUrl.split(';');
+
+    if (liveItemUrl) {
+      playerSetup();
+      playerObjInit();
+
+      wmplayer.URL = liveItemUrl[Math.floor(Math.random()*liveItemUrl.length)];
+
+      setDescription(liveItemTitle,liveItemDesc);
+      playerPlay();
+    }
+
+  }
+
   // kliknuti na polozku v menu
   $('.item a').click(function() {
     var itemUrl = $(this).attr('rel');
@@ -69,32 +115,14 @@ $(document).ready(function() {
 
     if (itemUrl) {
       // zobrazit a nastavit ovladaci prvky
-      $('#playerControl').show();
-      setupPlayerControl();
-
-      // skryt vychozi obrazek
-      if (playerDefImg.is(':hidden') == false) {
-        playerDefImg.addClass('wf-noShow');
-      }
-
-      // zobrazit odpovidajici objekt
-      if ($.browser.msie) {
-        $('#playerObjectIE').removeClass('wf-noShow');
-      } else {
-        $('#playerObject').removeClass('wf-noShow');
-      }
-
-      playerInit();
+      playerSetup();
+      playerObjInit();
 
       wmplayer.URL = itemUrl;
-      wmplayer.uiMode = 'none'; // none = bez ovladacich prvku, mini = standardni interface, full = mini + ukazatel prubehu
 
       // zobrazit datum, nazev, popis vybraneho videa
-      $('#descriptionIn h2').empty().append(itemDate + '&nbsp;' + itemTitle);
-      $('#descriptionIn p').empty().append(itemDesc);
-
+      setDescription(itemDate + '&nbsp;' + itemTitle,itemDesc);
       playerPlay();
-
     }
   });
 
@@ -111,7 +139,9 @@ $(document).ready(function() {
         playerPlay();
         break;
       default:
-        playerPause();
+        if (live == 0) {
+          playerPause();
+        }
     }
   });
 
@@ -136,10 +166,11 @@ $(document).ready(function() {
     //pVolImgSrc = $(this).attr('src');
   });
 /*
+  // interaktivni indikator zmeny hlasitosti
   pVolMap.mouseover(function() {
-    $('#tvSetVolume').attr('src', '/images/design/ico_tv-volume' + $(this).index() + '.png');
+    //console.log('pVolMap in, index: ' + $(this).index());
+    $('#tvSetVolume').attr('src', 'img/ico_tv-volume' + $(this).index() + '.png');
   }).mouseout(function() {
-    //console.log('pVolMap out');
     $('#tvSetVolume').attr('src', pVolImgSrc);
   });
 */
@@ -150,7 +181,7 @@ $(document).ready(function() {
 var wmplayer;
 var wmpControls, wmpSettings, wmpMedia;
 
-function playerInit() {
+function playerObjInit() {
 
   if ($.browser.msie) {
     wmplayer = document.getElementById("playerObjectIE");
@@ -175,6 +206,9 @@ function playerInit() {
   // Při načtení stránky aktualizuj progress a nastav aktivní tlačítko Stop
   //playerUpdateProgress();
 
+  wmplayer.uiMode = 'none'; // none = bez ovladacich prvku, mini = standardni interface, full = mini + ukazatel prubehu
+  
+  //playerSetVolume(5); // pri kazdem spusteni upravit hlasitost na stanovenou uroven; neni v tomto pripade zadouci?
   //console.log('init done');
 
 }
@@ -224,7 +258,7 @@ function playerSetVolume(vol) {
   var volumes = new Array(0,10,20,30,40,50,60,70,80,90,100);
 
   wmpSettings.volume = volumes[vol];
-  $('#tvVolumeVol > img').attr('src', '/images/design/ico_tv-volume' + parseInt(vol) + '.png');
+  $('#tvVolumeVol > img').attr('src', 'img/ico_tv-volume' + parseInt(vol) + '.png');
   $('#tvVolumeMute').removeClass('on');
   return true;
 }
@@ -246,7 +280,7 @@ function playerMute() {
 function convertSecToMin(seconds) {
   var mins = Math.floor(seconds / 60);
   var secs = (seconds % 60).toFixed();
-  if  (secs.length < 2) {
+  if (secs.length < 2) {
     secs = '0' + secs;
   }
   return (mins + ":" + secs);
@@ -281,15 +315,33 @@ function playerUpdateProgress() {
 
 
 // sada servisnich funkci
-function setupPlayerControl() {
-  var pCtrl = $('#playerControl');
-  //var pVolImg = $('#tvSetVolume');
+function playerSetup() {
+  var pDefImg = $('#playerScreen > img');
 
+/* s novym designem neni potreba
   pCtrl.each(function() {
     $(this).find('a').css('cursor', 'pointer');
   });
-  //pVolImg.css('cursor', 'pointer');
-  pCtrl.show();
+  //pauza v rezimu live nefunguje
+  if (m != 0) {
+    $('#tvControlPause').css('cursor', 'default');
+  }
+*/
+  $('#tvVolumeVol').css('cursor', 'pointer');
+  $('#playerControl').show();
+
+  // skryt vychozi obrazek
+  if (pDefImg.is(':hidden') == false) {
+    pDefImg.addClass('wf-noShow');
+  }
+
+  // zobrazit odpovidajici objekt
+  if ($.browser.msie) {
+    $('#playerObjectIE').removeClass('wf-noShow');
+  } else {
+    $('#playerObject').removeClass('wf-noShow');
+  }
+
 }
 
 function getDuration() {
@@ -298,9 +350,44 @@ function getDuration() {
   // hodnota duration pochazi z metadat streamovaneho objektu, ktery nemusi (a nebyva!)
   // okamzite k dispozici.
   wmpMedia = wmplayer.currentMedia;
-  if (wmpMedia.duration == 0) {
+
+/* test, mela by se pouzit funkce pro udalosti
+  //console.log('1: ' + wmplayer.Buffering); StatusChange(), status
+    switch (wmplayer.playState) {
+      case 1:
+        console.log('gD: stopped');
+        break;
+      case 2:
+        console.log('gD: paused');
+        break;
+      case 3:
+        console.log('gD: playing');
+        //$('#tvSizeMax').text('playing');
+        break;
+      case 9:
+        console.log('gD: preparing');
+        //$('#tvSizeMax').text('preparing');
+        break;
+      default:
+    }
+*/
+
+  if (wmpMedia == null || wmpMedia.duration == 0) {
     setTimeout("getDuration()", 150);
   }
+
+/* test
+  var counter = 0;
+  while (counter < 5 || wmpMedia.duration == 0) {
+    setTimeout("getDuration()", 150);
+    counter++;
+  }
+
+  while (wmplayer.playState <> 3) {
+    console.log(wmplayer.playState);
+  }
+*/
+
 }
 
 function itemFade() {
@@ -313,4 +400,12 @@ function itemFade() {
   }, function() {
     $(this).animate({ opacity: '0.65' }, fadeDuration);
   });
+}
+
+function setDescription(x,y) {
+  var descTitle = $('#descriptionIn h2');
+  var descText = $('#descriptionIn p');
+  
+  descTitle.empty().append(x);
+  descText.empty().append(y);
 }
