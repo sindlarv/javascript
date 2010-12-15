@@ -1,4 +1,4 @@
-﻿// wmplayer.js 1.2 --sindlarv
+﻿// wmplayer.js 1.3 --sindlarv
 
 $(document).ready(function() {
   var elem = $('#menuList');
@@ -8,7 +8,9 @@ $(document).ready(function() {
   var scrollHeight = $.scrollTo.max(elem[0], 'y');
 
   //console.log($.scrollTo.max('#menuScrollUp > a', 'y'));
+  //console.log($('#ad').css('margin-top'));
   $(window).scroll(function() {
+    //console.log($(window).scrollTop());
     $('#ad').css('margin-top', $(window).scrollTop());
   });
 
@@ -67,20 +69,22 @@ $(document).ready(function() {
     }
 
     // zobrazit odpovidajici objekt
-    //$('#playerObjectIE').removeClass('wf-noShow');
+    //dosadit URL, FileName pomoci prostredku jQuery...
+    // If the FileName property is not set, the Duration property returns zero
     if ($.browser.msie) {
+      $('#playerObjectIE param[name="URL"]').val(itemUrl);
+      //$('#playerObjectIE param[name="FileName"]').val(itemUrl);
       $('#playerObjectIE').removeClass('wf-noShow');
     } else {
+      $('#playerObject param[name="URL"]').val(itemUrl);
       $('#playerObject').removeClass('wf-noShow');
     }
 
-    //dosadit URL pomoci prostredku jQuery...
     playerInit();
+
     wmplayer.URL = itemUrl;
-    //wmpMedia = wmplayer.newMedia(itemUrl);
-    //wmplayer.fileName = itemUrl; // If the FileName property is not set, the Duration property returns zero
-    
     wmplayer.uiMode = 'none'; // none = bez ovladacich prvku, mini = standardni interface, full = mini + ukazatel prubehu
+
     playerPlay();
     
     // zobrazit datum, nazev, popis vybraneho videa
@@ -88,9 +92,9 @@ $(document).ready(function() {
     $('#descriptionIn p').empty().append(itemDesc);
   });
 
+  // udalosti prehravace
   $('#tvStop').click(function() {
     playerStop();
-    //console.log(wmpControls.currentPosition + ': ' + wmpMedia.duration);
   });
 
   $('#tvPause').click(function() {
@@ -117,7 +121,6 @@ $(document).ready(function() {
   });
 
   $('#tvVolumeMapID > area').click(function() {
-    //console.log($(this).index());
     playerSetVolume($(this).index());
   });
 
@@ -131,25 +134,23 @@ function playerInit() {
 
   if ($.browser.msie) {
     wmplayer = document.getElementById("playerObjectIE");
-//    wmpControls = wmplayer;
-//    wmpSettings = wmplayer;
+    //wmpControls = wmplayer;
     wmpControls = wmplayer.controls;
+    //wmpSettings = wmplayer;
     wmpSettings = wmplayer.settings;
     wmpMedia = wmplayer;
-
+    //wmpMedia = wmplayer.currentMedia;
+    wmpMedia.duration = 0;
   } else {
     wmplayer = document.getElementById("playerObject");
     wmpControls = wmplayer.controls;
     wmpSettings = wmplayer.settings;
-    
-    //wmplayer.currentMedia = firstMedia;
-    //wmpMedia = wmplayer.currentMedia;
-    wmpMedia = wmplayer;
-    //wmpMedia = wmplayer.newMedia(item);
+    wmpMedia = wmplayer.currentMedia;
+    //wmpMedia = wmplayer;
   }
 
   // Při načtení stránky aktualizuj progress a nastav aktivní tlačítko Stop
-  playerUpdateProgress();
+  //playerUpdateProgress();
   //document.getElementById("tvStop").src = "img/ico_tv-stop2.png";
 
   //console.log('init done');
@@ -158,10 +159,18 @@ function playerInit() {
 
 // Spuštění videa po stisknutí tlačítka Play a nastavení správné polohy tlačítek play/stop/pause
 function playerPlay() {
+  if (wmpMedia.duration == 0) {
+  //if (wmpMedia.duration == null) {
+    getDuration();
+  }
   wmpControls.play();
   //document.getElementById("tvStop").src = "img/ico_tv-stop.png";
   //document.getElementById("tvPause").src = "img/ico_tv-pause.png";
   //document.getElementById("tvPlay").src = "img/ico_tv-play2.png";
+  // wait an interval to allow video to start then proceed in next function
+   // Need a pause or currentMedia.duration won't be available.
+  //alert(wmpMedia.name);
+  playerUpdateProgress();
   return true;
 }
 
@@ -237,24 +246,28 @@ function convertSecToMin(seconds) {
 function playerUpdateProgress() {
   // Zjištění aktuální palohy a zbývající času a aktualizace odpovídajících prvků s konverzí do minutového formátu
   //console.log('curPos: ' + wmpControls.currentPosition + ', dur: ' + wmpMedia.durationString);
-  //alert(wmpMedia.durationString);
+  //alert(wmpMedia.duration);
   //console.log(wmpMedia.sourceURL);
   var wmpTimeElapsed = wmpControls.currentPosition;
   $('#tvProgressTime').empty().text(convertSecToMin(wmpTimeElapsed));
-  if (wmplayer.IsDurationValid) {
+
+  if (wmpMedia.duration > 0) {
     var wmpTimeLeft = wmpMedia.duration - wmpControls.currentPosition;
-    //document.getElementById("tvProgressLeft").innerText = "-" + convertSecToMin(wmpTimeLeft);
     $('#tvProgressLeft').empty().text('-' + convertSecToMin(wmpTimeLeft));
     // Aktualizace grafiky progresu - trojčlenkou s pevnou šířkou 400
-    if (wmplayer.duration > 0) {
-      $('#tvProgressBar > img').width((wmpTimeElapsed / wmpMedia.duration) * 400);
-    }
+    $('#tvProgressBar > img').width((wmpTimeElapsed / wmpMedia.duration) * 400);
   } else {
     $('#tvProgressLeft').empty().text('--:--');
     $('#tvProgressBar > img').width(400);
   }
+
   // Nastavení další aktualizace - pevně za půl vteřiny
-  var t = setTimeout("playerUpdateProgress()",500);
+  console.log('playState: ' + wmplayer.playState);
+  //alert('playState: ' + wmplayer.playState);
+  if (wmplayer.playState != 1) { // 1 = stopped, 2 = paused, 3 = playing, 9 = preparing, 10 = ready
+    var t = setTimeout("playerUpdateProgress()", 500);
+  }
+  
   return true;
 }
 
@@ -265,4 +278,28 @@ function setupPlayerControl() {
     $(this).find('img').css('cursor', 'pointer');
   });
   pCtrl.show();
+}
+
+function itemFade() {
+  var fadeDuration = 150;
+
+  $('.thumbnail > img').css('opacity', '0.65');
+  
+  $('.thumbnail > img').hover(function() {
+    $(this).animate({ opacity: '1' }, fadeDuration);
+  }, function() {
+    $(this).animate({ opacity: '0.65' }, fadeDuration);
+  });
+}
+
+function getDuration() {
+  // klic k rizeni objektu WMP spociva v tomto:
+  // "All of the methods in the Windows Media Player object model are asynchronous."
+  // hodnotu duration se nacte z metadat streamovaneho objektu, ktery nemusi (a nebyva)
+  // okamzite k dispozici.
+  wmpMedia = wmplayer.currentMedia;
+  if ( wmpMedia.duration == 0) {
+    setTimeout("getDuration()", 150);
+  }
+  //console.log(wmpMedia.duration);
 }
