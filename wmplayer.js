@@ -1,4 +1,4 @@
-﻿// wmplayer.js 1.6 --sindlarv
+﻿// wmplayer.js 1.6.1 --sindlarv
 
 $(document).ready(function() {
   var elem = $('#menuList');
@@ -14,7 +14,7 @@ $(document).ready(function() {
 
   // skryti ovladacich prvku a zobrazeni uvodniho obrazku
   //$('#playerControl').hide();
-  //playerDefImg.removeClass('wf-noShow');
+  playerDefImg.removeClass('wf-noShow');
 
   // inicializace menu
   if ((itemNumber*itemHeight) > listHeight) {
@@ -67,8 +67,6 @@ $(document).ready(function() {
     var itemTitle = itemParent.find('span.nadpis').text();
     var itemDesc = itemParent.find('span.popis').text();
 
-//console.log(itemDesc)
-
     if (itemUrl) {
       // zobrazit a nastavit ovladaci prvky
       $('#playerControl').show();
@@ -89,12 +87,14 @@ $(document).ready(function() {
       playerInit();
 
       wmplayer.URL = itemUrl;
+      wmplayer.uiMode = 'none'; // none = bez ovladacich prvku, mini = standardni interface, full = mini + ukazatel prubehu
 
       // zobrazit datum, nazev, popis vybraneho videa
       $('#descriptionIn h2').empty().append(itemDate + '&nbsp;' + itemTitle);
       $('#descriptionIn p').empty().append(itemDesc);
 
       playerPlay();
+
     }
   });
 
@@ -136,11 +136,10 @@ $(document).ready(function() {
     //pVolImgSrc = $(this).attr('src');
   });
 /*
-  // interaktivni indikator zmeny hlasitosti
   pVolMap.mouseover(function() {
-    //console.log('pVolMap in, index: ' + $(this).index());
-    $('#tvSetVolume').attr('src', 'img/ico_tv-volume' + $(this).index() + '.png');
+    $('#tvSetVolume').attr('src', '/images/design/ico_tv-volume' + $(this).index() + '.png');
   }).mouseout(function() {
+    //console.log('pVolMap out');
     $('#tvSetVolume').attr('src', pVolImgSrc);
   });
 */
@@ -176,9 +175,6 @@ function playerInit() {
   // Při načtení stránky aktualizuj progress a nastav aktivní tlačítko Stop
   //playerUpdateProgress();
 
-  wmplayer.uiMode = 'none'; // none = bez ovladacich prvku, mini = standardni interface, full = mini + ukazatel prubehu
-  
-  //playerSetVolume(5); // pri kazdem spusteni upravit hlasitost na stanovenou uroven; neni v tomto pripade zadouci?
   //console.log('init done');
 
 }
@@ -187,9 +183,9 @@ function playerInit() {
 function playerPlay() {
   // pri prvotnim nacteni objektu IE vyzaduje wmpMedia = wmplayer a vraci nenulovy objekt
   // FF&co naopak vyzaduji wmpMedia = wmplayer.currentMedia a tento je null
-//  if (wmpMedia == null || wmpMedia.duration == 0) {
+  if (wmpMedia == null || wmpMedia.duration == 0) {
     getDuration();
-//  }
+  }
   wmpControls.play();
   $('#tvControlStop').removeClass('on');
   $('#tvControlPause').removeClass('on');
@@ -228,7 +224,7 @@ function playerSetVolume(vol) {
   var volumes = new Array(0,10,20,30,40,50,60,70,80,90,100);
 
   wmpSettings.volume = volumes[vol];
-  $('#tvVolumeVol > img').attr('src', 'img/ico_tv-volume' + parseInt(vol) + '.png');
+  $('#tvVolumeVol > img').attr('src', '/images/design/ico_tv-volume' + parseInt(vol) + '.png');
   $('#tvVolumeMute').removeClass('on');
   return true;
 }
@@ -250,7 +246,7 @@ function playerMute() {
 function convertSecToMin(seconds) {
   var mins = Math.floor(seconds / 60);
   var secs = (seconds % 60).toFixed();
-  if (secs.length < 2) {
+  if  (secs.length < 2) {
     secs = '0' + secs;
   }
   return (mins + ":" + secs);
@@ -287,10 +283,12 @@ function playerUpdateProgress() {
 // sada servisnich funkci
 function setupPlayerControl() {
   var pCtrl = $('#playerControl');
+  //var pVolImg = $('#tvSetVolume');
 
   pCtrl.each(function() {
     $(this).find('a').css('cursor', 'pointer');
   });
+  //pVolImg.css('cursor', 'pointer');
   pCtrl.show();
 }
 
@@ -300,41 +298,9 @@ function getDuration() {
   // hodnota duration pochazi z metadat streamovaneho objektu, ktery nemusi (a nebyva!)
   // okamzite k dispozici.
   wmpMedia = wmplayer.currentMedia;
-
-  //console.log('1: ' + wmplayer.Buffering); StatusChange(), status
-    switch (wmplayer.playState) {
-      case 1:
-        console.log('gD: stopped');
-        break;
-      case 2:
-        console.log('gD: paused');
-        break;
-      case 3:
-        console.log('gD: playing');
-        $('#tvSizeMax').text('playing');
-        break;
-      case 9:
-        console.log('gD: preparing');
-        $('#tvSizeMax').text('preparing');
-        break;
-      default:
-    }
-
-  if (wmpMedia == null || wmpMedia.duration == 0) {
+  if (wmpMedia.duration == 0) {
     setTimeout("getDuration()", 150);
   }
-/*
-  var counter = 0;
-  while (counter < 5 || wmpMedia.duration == 0) {
-    setTimeout("getDuration()", 150);
-    counter++;
-  }
-
-  while (wmplayer.playState <> 3) {
-    console.log(wmplayer.playState);
-  }
-*/
-
 }
 
 function itemFade() {
